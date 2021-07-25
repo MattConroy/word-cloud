@@ -1,36 +1,43 @@
 #!/usr/bin/env python3
 import argparse
 import messages.core
-import numpy as np
-import pandas as pd
+import os
+import numpy
+import pandas
 from PIL import Image
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as pyplot
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--mask")
 parser.add_argument("--colours")
 parser.add_argument("--scale", type=int)
+parser.add_argument("--plot", action='store_true')
+parser.add_argument("--file", action='store_true')
+parser.add_argument("--open", action='store_true')
 args = parser.parse_args()
 
-dataFrame = pd.read_csv(messages.core.CSV_FILE_NAME,  delimiter=',', quotechar='|')
+if not os.path.isfile(messages.core.CSV_FILE_NAME):
+    raise ValueError(f'Cannot build Word Cloud without \'{messages.core.CSV_FILE_NAME}\'. Please run import.py first.')
+
+dataFrame = pandas.read_csv(messages.core.CSV_FILE_NAME,  delimiter=',', quotechar='|')
 
 text = " ".join(content for content in dataFrame.content).replace(messages.core.NEW_LINE_REPLACEMENT,'\n')
 stopWords = set(STOPWORDS)
 stopWords.update('P', 'D', 'O', 'Y', 'L', 'xxx', 'x', 'Yeah ')
 
 if args.mask:
-    mask = np.array(Image.open(f"masks/{args.mask}.png"))
+    mask = numpy.array(Image.open(f"masks/{args.mask}.png"))
 else:
     mask = None
 
 if args.colours:
-    colours = ImageColorGenerator(np.array(Image.open(f"colours/{args.colours}.png")))
+    colours = ImageColorGenerator(numpy.array(Image.open(f"colours/{args.colours}.png")))
 else:
     colours = None
 
-print(f"Generating Word Cloud from {len(text):,} words from \'{messages.core.CSV_FILE_NAME}\'.")
+print(f"Read {len(text):,} words from \'{messages.core.CSV_FILE_NAME}\'.")
 
 wordCloud = WordCloud(
         width = 1280,
@@ -44,12 +51,16 @@ wordCloud = WordCloud(
         background_color=None,
         mode='RGBA',
     ).generate(text)
-print('Generated Word Cloud. Saving image.')
-    
-wordCloud.to_file('word-cloud.png')
-print('Saved Word Cloud to \'word-cloud.png\'.')
+print('Generated Word Cloud.')
 
-# plt.figure(figsize=[19,9], tight_layout=True, frameon=False)
-# plt.imshow(wordCloud, interpolation='bilinear')
-# plt.axis('off')
-# plt.show()
+if args.file:
+    wordCloud.to_file('word-cloud.png')
+    print('Saved Word Cloud to \'word-cloud.png\'.')
+    if args.open:
+        os.system("start word-cloud.png")
+
+if args.plot:
+    pyplot.figure(figsize=[12,6], tight_layout=True, frameon=False)
+    pyplot.imshow(wordCloud, interpolation='bilinear')
+    pyplot.axis('off')
+    pyplot.show()
