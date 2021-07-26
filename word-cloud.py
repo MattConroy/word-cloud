@@ -23,9 +23,12 @@ if not os.path.isfile(messages.core.CSV_FILE_NAME):
 
 dataFrame = pandas.read_csv(messages.core.CSV_FILE_NAME,  delimiter=',', quotechar='|')
 
-text = " ".join(content for content in dataFrame.content).replace(messages.core.NEW_LINE_REPLACEMENT,'\n')
+text = " " \
+    .join(content for content in dataFrame.content) \
+    .replace(messages.core.NEW_LINE_REPLACEMENT,'\n')
+
 stopWords = set(STOPWORDS)
-stopWords.update('P', 'D', 'O', 'Y', 'L', 'xxx', 'x', 'Yeah ')
+stopWords.update(map(str.strip, open('stopwords.txt', 'r').readlines()))
 
 if args.mask:
     mask = numpy.array(Image.open(f"masks/{args.mask}.png"))
