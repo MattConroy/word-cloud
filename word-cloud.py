@@ -21,11 +21,9 @@ args = parser.parse_args()
 if not os.path.isfile(messages.core.CSV_FILE_NAME):
     raise ValueError(f'Cannot build Word Cloud without \'{messages.core.CSV_FILE_NAME}\'. Please run import.py first.')
 
-dataFrame = pandas.read_csv(messages.core.CSV_FILE_NAME,  delimiter=',', quotechar='|')
+dataFrame = messages.core.readCsvFile()
 
-text = " " \
-    .join(content for content in dataFrame.content) \
-    .replace(messages.core.NEW_LINE_REPLACEMENT,'\n')
+text = " ".join(content for content in dataFrame.content)
 
 stopWords = set(STOPWORDS)
 stopWords.update(map(str.strip, open('stopwords.txt', 'r').readlines()))
